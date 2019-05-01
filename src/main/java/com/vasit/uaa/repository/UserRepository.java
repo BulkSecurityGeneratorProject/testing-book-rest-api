@@ -25,6 +25,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findOneByEmailIgnoreCase(String email);
 
+    @EntityGraph(attributePaths = {
+        "orders.items",
+        "authorities"
+    })
     Optional<User> findOneByLogin(String login);
 
     @EntityGraph(attributePaths = "authorities")

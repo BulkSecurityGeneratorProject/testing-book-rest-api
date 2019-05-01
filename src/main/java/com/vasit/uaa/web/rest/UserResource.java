@@ -7,19 +7,16 @@ import com.vasit.uaa.security.AuthoritiesConstants;
 import com.vasit.uaa.service.MailService;
 import com.vasit.uaa.service.UserService;
 import com.vasit.uaa.service.dto.UserDTO;
+import com.vasit.uaa.service.dto.UserOrderRequestDTO;
+import com.vasit.uaa.service.dto.UserOrderResponseDTO;
 import com.vasit.uaa.web.rest.errors.BadRequestAlertException;
 import com.vasit.uaa.web.rest.errors.EmailAlreadyUsedException;
+import com.vasit.uaa.web.rest.errors.InternalServerErrorException;
 import com.vasit.uaa.web.rest.errors.LoginAlreadyUsedException;
 import com.vasit.uaa.web.rest.util.HeaderUtil;
-import com.vasit.uaa.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +24,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller for managing users.
@@ -131,17 +129,16 @@ public class UserResource {
             HeaderUtil.createAlert("A user is updated with identifier " + userDTO.getLogin(), userDTO.getLogin()));
     }
 
-    /**
-     * GET /users : get all users.
-     *
-     * @param pageable the pagination information
-     * @return the ResponseEntity with status 200 (OK) and with body all users
-     */
     @GetMapping("/users")
-    public ResponseEntity<List<UserDTO>> getAllUsers(Pageable pageable) {
-        final Page<UserDTO> page = userService.getAllManagedUsers(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/users");
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    public UserDTO getUsers() {
+        return userService.getUserWithOrders()
+            .map(UserDTO::new)
+            .orElseThrow(() -> new InternalServerErrorException("User could not be found"));
+    }
+
+    @PostMapping("users/orders")
+    public UserOrderResponseDTO storeOrder(@Valid @RequestBody UserOrderRequestDTO request) {
+        return userService.storeOrder(request);
     }
 
     /**

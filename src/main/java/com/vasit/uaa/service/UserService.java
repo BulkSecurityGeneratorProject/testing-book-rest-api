@@ -2,15 +2,24 @@ package com.vasit.uaa.service;
 
 import com.vasit.uaa.config.Constants;
 import com.vasit.uaa.domain.Authority;
+import com.vasit.uaa.domain.Order;
+import com.vasit.uaa.domain.OrderItem;
 import com.vasit.uaa.domain.User;
 import com.vasit.uaa.repository.AuthorityRepository;
+import com.vasit.uaa.repository.OrderItemRepository;
+import com.vasit.uaa.repository.OrderRepository;
 import com.vasit.uaa.repository.UserRepository;
 import com.vasit.uaa.security.AuthoritiesConstants;
 import com.vasit.uaa.security.SecurityUtils;
+import com.vasit.uaa.service.dto.BookDTO;
 import com.vasit.uaa.service.dto.UserDTO;
+import com.vasit.uaa.service.dto.UserOrderRequestDTO;
+import com.vasit.uaa.service.dto.UserOrderResponseDTO;
 import com.vasit.uaa.service.util.RandomUtil;
-import com.vasit.uaa.web.rest.errors.*;
-
+import com.vasit.uaa.web.rest.errors.EmailAlreadyUsedException;
+import com.vasit.uaa.web.rest.errors.InternalServerErrorException;
+import com.vasit.uaa.web.rest.errors.InvalidPasswordException;
+import com.vasit.uaa.web.rest.errors.LoginAlreadyUsedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,9 +29,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -40,10 +53,24 @@ public class UserService {
 
     private final AuthorityRepository authorityRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthorityRepository authorityRepository) {
+    private final OrderRepository orderRepository;
+
+    private final OrderItemRepository orderItemRepository;
+
+    private final BookService bookService;
+
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       AuthorityRepository authorityRepository,
+                       BookService bookService,
+                       OrderRepository orderRepository,
+                       OrderItemRepository orderItemRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
+        this.bookService = bookService;
+        this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -249,6 +276,11 @@ public class UserService {
         return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<User> getUserWithOrders() {
+        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneByLogin);
+    }
+
     /**
      * Not activated users should be automatically deleted after 3 days.
      * <p>
@@ -269,5 +301,44 @@ public class UserService {
      */
     public List<String> getAuthorities() {
         return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserOrderResponseDTO storeOrder(UserOrderRequestDTO request) {
+        if (request.getOrders() == null) {
+            throw new InternalServerErrorException("User could not be found");
+        }
+
+        Order order = new Order();
+        order.setUser(this.getUserWithOrders().get());
+        final Order orderResult = orderRepository.save(order);
+
+        List<BookDTO> books = bookService.all();
+        List<OrderItem> items = request.getOrders()
+            .stream()
+            .map(bookId -> {
+                OrderItem item = new OrderItem();
+                item.setOrder(orderResult);
+                books.stream()
+                    .filter(b -> b.getId().equals(bookId))
+                    .findFirst()
+                    .ifPresent(bookDTO -> {
+                        item.setBookId(bookDTO.getId());
+                        item.setPrice(bookDTO.getPrice());
+                    });
+                return item;
+            })
+            .filter(book -> book.getId() != null)
+            .collect(Collectors.toList());
+
+        if (items.size() != request.getOrders().size()) {
+            throw new InternalServerErrorException("Some book could not be found");
+        }
+
+        items.forEach(orderItemRepository::save);
+        UserOrderResponseDTO response = new UserOrderResponseDTO();
+        response.setPrice(items.stream().map(OrderItem::getPrice).reduce(BigDecimal::add).get());
+
+        return response;
     }
 }
