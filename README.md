@@ -60,3 +60,6 @@ GET /api/books
             "is_recommended": false
         }
     ]
+    
+### Postman
+    ./scb-testing.postman_collection.json

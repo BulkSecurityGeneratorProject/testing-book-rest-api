@@ -1,0 +1,281 @@
+{
+	"info": {
+		"_postman_id": "2c44c6fb-5ea1-4b95-9e82-1f3eee98dc08",
+		"name": "SCB Testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"login\": \"vasitjuntong\",\n\t\"password\": \"secret\",\n\t\"email\": \"test@test.com\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9999/uaa/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9999",
+					"path": [
+						"uaa",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a31e0e60-4104-4807-bd2e-0a2315c3a0ad",
+						"exec": [
+							"pm.globals.set('access_token', pm.response.json().access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic d2ViX2FwcDpjaGFuZ2VpdA==",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:9999/uaa/oauth/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9999",
+					"path": [
+						"uaa",
+						"oauth",
+						"token"
+					]
+				},
+				"description": "POST:\t/login\nThis is\tthe\tuser login authentication API. The request and\tresponse should be over a secured communication"
+			},
+			"response": []
+		},
+		{
+			"name": "User Create order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"orders\": [4]\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9999/uaa/api/users/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9999",
+					"path": [
+						"uaa",
+						"api",
+						"users",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"activated\": true,\n  \"authorities\": [\n    \"ROLE_USER\"\n  ],\n  \"createdBy\": \"Vasit\",\n  \"createdDate\": \"2019-04-29T11:53:32.989Z\",\n  \"email\": \"user1@test.com\",\n  \"firstName\": \"vasit\",\n\n  \"imageUrl\": \"string\",\n  \"langKey\": \"string\",\n  \"lastModifiedBy\": \"Vasit\",\n  \"lastModifiedDate\": \"2019-04-29T11:53:32.989Z\",\n  \"lastName\": \"juntong\",\n  \"login\": \"vasitjuntong\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9999/uaa/api/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9999",
+					"path": [
+						"uaa",
+						"api",
+						"users"
+					]
+				},
+				"description": "(Login required)\tGets information\tabout the\tlogged\tin\tuser. A\tsuccessfully authenticated request\treturns information\trelated\tto the user\tand\tthe\tbooks ordered."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User with User Login",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:9999/uaa/api/users/vasitjuntong",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9999",
+					"path": [
+						"uaa",
+						"api",
+						"users",
+						"vasitjuntong"
+					]
+				},
+				"description": "http://localhost:9999/uaa/api/users/{user-login}"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Books with recommended",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:9999/uaa/api/books",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9999",
+					"path": [
+						"uaa",
+						"api",
+						"books"
+					]
+				},
+				"description": "http://localhost:9999/uaa/api/books"
+			},
+			"response": []
+		}
+	]
+}
