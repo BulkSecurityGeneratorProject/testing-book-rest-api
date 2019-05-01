@@ -328,7 +328,7 @@ public class UserService {
                     });
                 return item;
             })
-            .filter(book -> book.getId() != null)
+            .filter(book -> book.getBookId() != null)
             .collect(Collectors.toList());
 
         if (items.size() != request.getOrders().size()) {
