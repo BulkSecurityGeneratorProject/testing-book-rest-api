@@ -12,10 +12,12 @@ POST: /oauth/token
 This is	the	user login authentication API. The request and response	should be over a secured	
 communication
 ##### Request:
-    {"username":"john.doe",	"password":	"thisismysecret"}
+    {"username":"john.doe",	"password": "thisismysecret"}
     
 ### Get User
 GET  /api/users
+
+*Login required
 
 ### Delete users
 DELETE  /api/users
