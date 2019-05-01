@@ -5,10 +5,7 @@ import com.vasit.uaa.domain.Authority;
 import com.vasit.uaa.domain.Order;
 import com.vasit.uaa.domain.User;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +28,7 @@ public class UserDTO {
     @Size(max = 50)
     private String lastName;
 
+    @NotNull
     @Email
     @Size(min = 5, max = 254)
     private String email;
