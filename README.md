@@ -26,9 +26,10 @@ DELETE  /api/users
 
 ### Create user
 POST /users
-
+*Login required (username: admin / password: admin)
+ 
 ##### Request:
-    {"login": "john.doe", "password": "thisismysecret", "email": "john.doe@email.com"}
+    {"login": "john.doe", "password": "thisismysecret"}
 
 ### Create order
 POST /api/users/orders
